@@ -87,6 +87,34 @@ async function deleteNovel(id) {
   return { id };
 }
 
+// Add this function with your other API functions
+async function publishNovel(id) {
+  // First get the current novel data
+  const { data: novel, error: fetchError } = await supabase
+    .from("novels")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError) throw new Error(fetchError.message);
+
+  // Toggle the published status
+  const isCurrentlyPublished = novel.published === true;
+
+  const { data, error } = await supabase
+    .from("novels")
+    .update({
+      published: !isCurrentlyPublished,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 // React Query hooks for novels
 export function useCreateNovel() {
   const queryClient = useQueryClient();
@@ -157,4 +185,25 @@ export function useDeleteNovel() {
   });
 
   return { deleteNovel: deleteNovelMutation, isLoading };
+}
+
+export function usePublishNovel() {
+  const queryClient = useQueryClient();
+
+  const { mutate: publishNovelMutation, isLoading: isPublishing } = useMutation(
+    {
+      mutationFn: publishNovel,
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["novels"] });
+        queryClient.invalidateQueries({ queryKey: ["novel", data.id] });
+        const publishStatus = data.published ? "published" : "unpublished";
+        toast.success(`Novel ${publishStatus} successfully!`);
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to publish novel");
+      },
+    }
+  );
+
+  return { publishNovel: publishNovelMutation, isPublishing };
 }

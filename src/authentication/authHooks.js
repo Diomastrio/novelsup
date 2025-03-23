@@ -56,7 +56,17 @@ export function useUpdateUser() {
     onError: (err) => toast.error(err.message),
   });
 
-  return { updateUser, isUpdating };
+  return {
+    updateUser: (data, options = {}) => {
+      return updateUser(data, {
+        onSuccess: (userData) => {
+          if (options.onSuccess) options.onSuccess(userData);
+        },
+        ...options,
+      });
+    },
+    isUpdating,
+  };
 }
 
 export function useLogout() {

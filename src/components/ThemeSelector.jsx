@@ -32,7 +32,7 @@ function ThemeSelector() {
       <div
         tabIndex={0}
         className="dropdown-content mt-2 p-1 shadow-2xl bg-base-200 backdrop-blur-lg rounded-2xl
-        w-56 border border-base-content/10"
+        w-56 border border-base-content/10 max-h-[70vh] overflow-y-auto"
       >
         {themeObjects.map((themeOption) => (
           <button

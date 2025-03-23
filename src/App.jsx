@@ -9,12 +9,17 @@ import LoginPage from "./pages/Login";
 import NovelNestDashboard from "./pages/Dashboard";
 import Homepage from "./pages/Home";
 import RegisterPage from "./pages/Register";
+import Profile from "./pages/Profile";
 import Publish from "./pages/Publish";
 import CreateNovel from "./pages/CreateNovel";
 import EditNovel from "./pages/EditNovel";
-import ChaptersList from "./pages/ChaptersList";
-import ChapterForm from "./pages/ChapterForm";
+import ChaptersList from "./components/ChaptersList";
+import ChapterForm from "./components/ChapterForm";
 import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+import Bookmarks from "./pages/Bookmark";
+import NovelDetail from "./pages/NovelDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,17 +49,32 @@ function App() {
           <Route path="/home" element={<Homepage />} />
           <Route path="/browse" element={<Browse />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/publish" element={<Publish />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/dashboard" element={<NovelNestDashboard />} />
-          <Route path="/create-novel" element={<CreateNovel />} />
-          <Route path="/novel/:id/edit" element={<EditNovel />} />
-          <Route path="/novel/:novelId/chapters" element={<ChaptersList />} />
-          <Route path="/novel/:novelId/chapter/new" element={<ChapterForm />} />
-          <Route
-            path="/novel/:novelId/chapter/:chapterId/edit"
-            element={<ChapterForm />}
-          />
+          <Route path="/novel/:id" element={<NovelDetail />} />
+
+          {/* Protected routes - require authentication */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/publish" element={<Publish />} />
+            <Route path="/bookmarks" element={<Bookmarks />} />
+          </Route>
+
+          {/* Admin-only routes */}
+          <Route element={<ProtectedAdminRoute />}>
+            <Route path="/create-novel" element={<CreateNovel />} />
+            <Route path="/novel/:id/edit" element={<EditNovel />} />
+            <Route path="/novel/:novelId/chapters" element={<ChaptersList />} />
+            <Route
+              path="/novel/:novelId/chapter/new"
+              element={<ChapterForm />}
+            />
+            <Route
+              path="/novel/:novelId/chapter/:chapterId/edit"
+              element={<ChapterForm />}
+            />
+            <Route path="/dashboard" element={<NovelNestDashboard />} />
+            {/* Add other admin-only routes here */}
+          </Route>
         </Routes>
         <Toaster />
         <Footer />

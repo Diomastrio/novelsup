@@ -1,12 +1,79 @@
-import React from "react";
-import { Book, Edit, Trash2, Plus, Loader } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Book, Edit, Trash2, Plus, Loader, BookCheck } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useUserNovels, useDeleteNovel } from "../services/novelHooks";
+import {
+  useUserNovels,
+  useDeleteNovel,
+  usePublishNovel,
+} from "../services/novelHooks";
 import { formatDistanceToNow } from "date-fns";
+import supabase from "../services/supabaseClient";
 
 const NovelNestDashboard = () => {
   const { data: novels, isLoading, isError } = useUserNovels();
   const { deleteNovel, isLoading: isDeleting } = useDeleteNovel();
+  const { publishNovel, isPublishing } = usePublishNovel();
+
+  // State to store word counts and chapter counts
+  const [wordCounts, setWordCounts] = useState({});
+  const [totalChapters, setTotalChapters] = useState(0);
+  const [showWordCountDetails, setShowWordCountDetails] = useState(false);
+
+  // Calculate word counts when novels data changes
+  useEffect(() => {
+    async function calculateWordCounts() {
+      if (!novels) return;
+
+      let novelWordCounts = {};
+      let chapterCount = 0;
+
+      // Process each novel sequentially
+      for (const novel of novels) {
+        try {
+          const { data: chapters } = await supabase
+            .from("chapters")
+            .select("*")
+            .eq("novel_id", novel.id);
+
+          if (chapters) {
+            chapterCount += chapters.length;
+            // Calculate total words for this novel
+            const novelWords = chapters.reduce(
+              (sum, chapter) =>
+                sum +
+                (chapter.content?.split(/\s+/).filter(Boolean).length || 0),
+              0
+            );
+            novelWordCounts[novel.id] = {
+              title: novel.title,
+              wordCount: novelWords,
+            };
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching chapters for novel ${novel.id}:`,
+            error
+          );
+        }
+      }
+
+      setWordCounts(novelWordCounts);
+      setTotalChapters(chapterCount);
+    }
+
+    calculateWordCounts();
+  }, [novels]);
+
+  // Calculate total word count
+  const totalWordCount = Object.values(wordCounts).reduce(
+    (sum, novel) => sum + novel.wordCount,
+    0
+  );
+
+  // Toggle word count details
+  const toggleWordCountDetails = () => {
+    setShowWordCountDetails((prev) => !prev);
+  };
 
   const handleDeleteNovel = (id) => {
     if (
@@ -16,6 +83,10 @@ const NovelNestDashboard = () => {
     ) {
       deleteNovel(id);
     }
+  };
+
+  const handlePublishNovel = (id) => {
+    publishNovel(id);
   };
 
   return (
@@ -115,6 +186,14 @@ const NovelNestDashboard = () => {
                       </Link>
                       <button
                         className="flex items-center px-4 py-2 rounded hover:bg-gray-800"
+                        disabled={isPublishing}
+                        onClick={() => handlePublishNovel(novel.id)}
+                      >
+                        <BookCheck className="mr-2" size={18} />
+                        {novel.published ? "Unpublish" : "Publish"}
+                      </button>
+                      <button
+                        className="flex items-center px-4 py-2 rounded hover:bg-gray-800"
                         onClick={() => handleDeleteNovel(novel.id)}
                         disabled={isDeleting}
                       >
@@ -126,6 +205,59 @@ const NovelNestDashboard = () => {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Add this after the novel list section */}
+          <div className="mt-12 p-6 border border-gray-700 rounded-lg bg-base-200">
+            <h2 className="text-2xl font-bold mb-6">Your Writing Stats</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-base-100 p-5 rounded-lg">
+                <h3 className="text-primary font-medium mb-1">Total Words</h3>
+                <div className="flex flex-col">
+                  <p className="text-3xl font-bold">
+                    {totalWordCount.toLocaleString()}
+                  </p>
+                  <button
+                    onClick={toggleWordCountDetails}
+                    className="text-xs text-primary mt-2 underline self-start"
+                  >
+                    {showWordCountDetails ? "Hide breakdown" : "Show breakdown"}
+                  </button>
+
+                  {showWordCountDetails && (
+                    <div className="mt-3 space-y-2 max-h-48 overflow-y-auto text-sm">
+                      {Object.values(wordCounts)
+                        .sort((a, b) => b.wordCount - a.wordCount)
+                        .map((novel) => (
+                          <div
+                            key={novel.title}
+                            className="flex justify-between border-b border-base-300 pb-1"
+                          >
+                            <span className="truncate mr-2">{novel.title}</span>
+                            <span className="font-medium">
+                              {novel.wordCount.toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="bg-base-100 p-5 rounded-lg">
+                <h3 className="text-primary font-medium mb-1">
+                  Published Novels
+                </h3>
+                <p className="text-3xl font-bold">
+                  {novels?.filter((n) => n.published).length || 0}
+                </p>
+              </div>
+              <div className="bg-base-100 p-5 rounded-lg">
+                <h3 className="text-primary font-medium mb-1">
+                  Total Chapters
+                </h3>
+                <p className="text-3xl font-bold">{totalChapters}</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>

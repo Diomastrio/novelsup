@@ -1,11 +1,25 @@
 import React from "react";
-import { Search, Bell, Moon, User, BookOpen, PenLine } from "lucide-react";
+import {
+  Search,
+  Bell,
+  Moon,
+  UserRoundPen,
+  BookOpen,
+  PenLine,
+  LogOut,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeSelector from "./ThemeSelector";
-import { useUser } from "../authentication/authHooks";
+import { useUser, useLogout } from "../authentication/authHooks";
 
 export default function Navbar() {
   const { user, isAdmin } = useUser();
+  const { logout } = useLogout();
+
+  const handleLogout = () => {
+    logout();
+    // The redirect to login page is already handled in the useLogout hook
+  };
 
   return (
     <nav className="flex items-center justify-between p-4 border-b border-gray-800">
@@ -34,23 +48,18 @@ export default function Navbar() {
         </div>
       </div>
       <div className="flex items-center space-x-4">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Search novels..."
-            className=" border border-gray-700 rounded-full pl-10 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-gray-500 w-64"
-          />
-        </div>
         <button className="p-2 hover:bg-gray-800 rounded-full">
           <Bell size={20} />
         </button>
         <ThemeSelector />
-        <button className="p-2 hover:bg-gray-800 rounded-full">
-          <User size={20} />
+        <Link to="/profile" className="p-2 hover:bg-gray-800 rounded-full">
+          <UserRoundPen size={20} />
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="p-2 hover:bg-gray-800 rounded-full"
+        >
+          <LogOut size={20} />
         </button>
       </div>
     </nav>
