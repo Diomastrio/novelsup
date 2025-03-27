@@ -90,12 +90,10 @@ export function useSignup() {
   const { mutate: signup, isLoading } = useMutation({
     mutationFn: signupApi,
     onSuccess: (user) => {
-      // Show success message
       toast.success("¡Cuenta creada con éxito!");
-      navigate("/login", { replace: true });
+      navigate("/dashboard", { replace: true });
     },
     onError: (error) => {
-      // Show error message
       if (error.message === "Email already registered") {
         toast.error("¡El correo electrónico ya está registrado!", {
           delay: 4000,

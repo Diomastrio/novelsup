@@ -12,8 +12,8 @@ const EditNovel = () => {
     title: "",
     description: "",
     cover_image_url: "",
-    game: "",
-    status: "ongoing",
+    genre: "",
+    status: "",
   });
 
   useEffect(() => {
@@ -22,8 +22,8 @@ const EditNovel = () => {
         title: novel.title || "",
         description: novel.description || "",
         cover_image_url: novel.cover_image_url || "",
-        game: novel.game || "",
-        status: novel.status || "ongoing",
+        genre: novel.genre || "",
+        status: novel.status || "",
       });
     }
   }, [novel]);
@@ -153,21 +153,21 @@ const EditNovel = () => {
                 />
               </div>
 
-              {/* Game */}
+              {/* Genre */}
               <div>
                 <label
-                  htmlFor="game"
+                  htmlFor="genre"
                   className="block text-sm font-medium mb-2"
                 >
-                  Associated Game (optional)
+                  Genre (optional)
                 </label>
                 <input
-                  id="game"
-                  name="game"
+                  id="genre"
+                  name="genre"
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="e.g., Final Fantasy, Elden Ring"
-                  value={formData.game}
+                  value={formData.genre}
                   onChange={handleChange}
                 />
               </div>

@@ -9,7 +9,7 @@ const CreateNovel = () => {
     description: "",
     cover_image_url: "",
     genre: "",
-    status: "ongoing",
+    status: "",
   });
 
   const { createNovel, isLoading } = useCreateNovel();

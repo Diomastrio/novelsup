@@ -121,11 +121,11 @@ const Profile = () => {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <Link
-            to="/dashboard"
+            to="/browse"
             className="flex items-center text-primary hover:underline"
           >
             <ArrowLeft size={18} className="mr-2" />
-            Back to Dashboard
+            Back to Browse
           </Link>
         </div>
 

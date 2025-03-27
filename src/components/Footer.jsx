@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-gray-800">
           <p className=" mb-4 md:mb-0">
-            © 2025 NovelNest. All rights reserved.
+            © 2025 Spiro Spero. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <Link to="./pages/about" className=" hover:text-white">

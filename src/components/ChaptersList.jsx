@@ -99,13 +99,13 @@ const ChaptersList = () => {
                   <div className="flex space-x-2">
                     <Link
                       to={`/novel/${novelId}/chapter/${chapter.id}/edit`}
-                      className="flex items-center px-3 py-1 rounded hover:bg-gray-800"
+                      className="flex items-center px-3 py-1 rounded hover:opacity-80"
                     >
                       <Edit size={16} className="mr-1" />
                       Edit
                     </Link>
                     <button
-                      className="flex items-center px-3 py-1 rounded hover:bg-gray-800"
+                      className="flex items-center px-3 py-1 rounded hover:opacity-80"
                       onClick={() => handleDeleteChapter(chapter.id)}
                       disabled={isDeleting}
                     >

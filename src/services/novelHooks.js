@@ -159,6 +159,7 @@ export function useUpdateNovel() {
       queryClient.invalidateQueries({ queryKey: ["novels"] });
       queryClient.invalidateQueries({ queryKey: ["novel", data.id] });
       toast.success("Novel updated successfully!");
+      navigate("/dashboard");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update novel");
@@ -198,6 +199,7 @@ export function usePublishNovel() {
         queryClient.invalidateQueries({ queryKey: ["novel", data.id] });
         const publishStatus = data.published ? "published" : "unpublished";
         toast.success(`Novel ${publishStatus} successfully!`);
+        navigate("/dashboard");
       },
       onError: (error) => {
         toast.error(error.message || "Failed to publish novel");
