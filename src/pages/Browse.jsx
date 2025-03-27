@@ -18,7 +18,8 @@ function Browse() {
   const [selectedGenre, setSelectedGenre] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [genres, setGenres] = useState([]);
-
+  const [sortOrder, setSortOrder] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   // Fetch published novels
   const { data: novels, isLoading } = useQuery({
     queryKey: ["publishedNovels"],
@@ -62,71 +63,114 @@ function Browse() {
     return matchesSearch && matchesGenre && matchesStatus;
   });
 
+  // Sort novels based on selected sort order
+  const sortedNovels = filteredNovels ? [...filteredNovels] : [];
+  if (sortOrder === "oldest") {
+    sortedNovels.sort(
+      (a, b) => new Date(a.updated_at) - new Date(b.updated_at)
+    );
+  } else {
+    // Default to latest (newest first)
+    sortedNovels.sort(
+      (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
+    );
+  }
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-base-100">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold mb-3 text-primary">
-            Discover Stories
-          </h1>
-          <p className="text-lg max-w-2xl mx-auto opacity-75">
-            Explore a world of imagination through our collection of novels
-          </p>
-        </div>
-
         {/* Search and Filters */}
-        <div className="mb-8 bg-base-200 p-6 rounded-2xl shadow-md">
-          <div className="flex flex-col md:flex-row gap-4 justify-between">
-            <div className="relative flex-grow max-w-2xl">
-              <Search
+        <div className="mb-8 bg-base-200 p-4 md:p-6 rounded-2xl shadow-md">
+          {/* Header with title and search icon */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-1xl md:text-2xl font-bold text-primary">
+              Dive into the world of Legendarium
+            </h2>
+
+            {/* Animated search with hover effect */}
+            <div
+              className="relative flex items-center"
+              onMouseEnter={() => setSearchOpen(true)}
+              onMouseLeave={() => !searchTerm && setSearchOpen(false)}
+            >
+              <div
+                className={`transition-all duration-300 overflow-hidden flex items-center ${
+                  searchOpen ? "w-48 md:w-64" : "w-0"
+                }`}
+              >
+                <input
+                  type="text"
+                  placeholder="Search novels..."
+                  className="input input-bordered h-10 w-full rounded-xl pl-3 pr-9 py-1 bg-base-100 focus:outline-none"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                className={`h-10 w-10 flex items-center justify-center rounded-full bg-primary text-primary-content ${
+                  searchOpen ? "ml-1" : ""
+                }`}
+                onClick={() => {
+                  setSearchOpen(!searchOpen);
+                  if (!searchOpen && searchTerm) setSearchTerm("");
+                }}
+              >
+                <Search size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Filters - Wrap on smaller screens */}
+          <div className="flex flex-wrap gap-2 md:gap-3">
+            <div className="relative w-full sm:w-auto flex-1">
+              <select
+                className="select select-bordered w-full rounded-xl pl-10 pr-3 py-2 appearance-none bg-base-100"
+                value={selectedGenre}
+                onChange={(e) => setSelectedGenre(e.target.value)}
+              >
+                <option value="">All Genres</option>
+                {genres.map((genre) => (
+                  <option key={genre} value={genre}>
+                    {genre}
+                  </option>
+                ))}
+              </select>
+              <BookOpen
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
-                size={20}
-              />
-              <input
-                type="text"
-                placeholder="Search novels by title or description..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-700 bg-base-100 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                size={18}
               />
             </div>
 
-            <div className="flex gap-3">
-              <div className="relative">
-                <select
-                  className="select select-bordered rounded-xl pl-10 pr-3 py-3 appearance-none bg-base-100"
-                  value={selectedGenre}
-                  onChange={(e) => setSelectedGenre(e.target.value)}
-                >
-                  <option value="">All Genres</option>
-                  {genres.map((genre) => (
-                    <option key={genre} value={genre}>
-                      {genre}
-                    </option>
-                  ))}
-                </select>
-                <BookOpen
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
-                  size={20}
-                />
-              </div>
+            <div className="relative w-full sm:w-auto flex-1">
+              <select
+                className="select select-bordered w-full rounded-xl pl-10 pr-5 py-2 appearance-none bg-base-100"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <option value="">All Status</option>
+                <option value="ongoing">Ongoing</option>
+                <option value="completed">Completed</option>
+                <option value="hiatus">On Hiatus</option>
+              </select>
+              <Filter
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
+                size={18}
+              />
+            </div>
 
-              <div className="relative">
-                <select
-                  className="select select-bordered rounded-xl pl-10 pr-3 py-3 appearance-none bg-base-100"
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                >
-                  <option value="">All Status</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                  <option value="hiatus">On Hiatus</option>
-                </select>
-                <Filter
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
-                  size={20}
-                />
-              </div>
+            <div className="relative w-full sm:w-auto flex-1">
+              <select
+                className="select select-bordered w-full rounded-xl pl-10 pr-3 py-2 appearance-none bg-base-100"
+                onChange={(e) => setSortOrder(e.target.value)}
+                defaultValue=""
+              >
+                <option value="">Latest</option>
+                <option value="oldest">Oldest</option>
+              </select>
+              <Clock
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
+                size={18}
+              />
             </div>
           </div>
         </div>
@@ -137,7 +181,7 @@ function Browse() {
             <Loader className="animate-spin mr-3 text-primary" size={30} />
             <span className="text-lg">Discovering stories for you...</span>
           </div>
-        ) : filteredNovels?.length === 0 ? (
+        ) : sortedNovels.length === 0 ? (
           <div className="text-center py-20 border-2 border-dashed border-gray-600 rounded-xl bg-base-200">
             <Book size={64} className="mx-auto mb-4 opacity-50" />
             <h3 className="text-2xl font-medium mb-2">No Stories Found</h3>
@@ -148,54 +192,56 @@ function Browse() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredNovels.map((novel) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {sortedNovels.map((novel) => (
               <Link
                 to={`/novel/${novel.id}`}
                 key={novel.id}
-                className="group bg-base-200 border border-base-300 rounded-2xl overflow-hidden hover:border-primary hover:shadow-lg transition-all duration-300 flex flex-col h-full"
+                className="group bg-base-200 border border-base-300 rounded-lg overflow-hidden hover:border-primary hover:shadow-md transition-all duration-300 flex flex-col h-full"
               >
-                <div className="h-72 overflow-hidden relative">
+                <div className="h-56 overflow-hidden relative">
                   {novel.cover_image_url ? (
                     <img
                       src={novel.cover_image_url}
                       alt={novel.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-base-300">
-                      <Book size={48} className="opacity-40 text-primary" />
+                      <Book size={36} className="opacity-40 text-primary" />
                     </div>
                   )}
                   {novel.genre && (
-                    <div className="absolute bottom-3 right-3">
-                      <span className="px-3 py-1 bg-primary bg-opacity-80 text-primary-content text-xs rounded-full">
+                    <div className="absolute bottom-2 right-2">
+                      <span className="px-2 py-0.5 bg-primary bg-opacity-80 text-primary-content text-xs rounded-full">
                         {novel.genre}
                       </span>
                     </div>
                   )}
                 </div>
-                <div className="p-5 flex-grow flex flex-col">
-                  <div className="flex justify-between items-start gap-2 mb-3">
-                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">
+                <div className="p-3 flex-grow flex flex-col">
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <h3 className="text-base font-bold group-hover:text-primary transition-colors line-clamp-1">
                       {novel.title}
                     </h3>
-                    <BookmarkButton novelId={novel.id} size={20} />
+                    <BookmarkButton novelId={novel.id} size={16} />
                   </div>
-                  <p className="text-sm opacity-75 line-clamp-3 mb-4 flex-grow">
+                  <p className="text-xs opacity-75 line-clamp-2 mb-2 flex-grow">
                     {novel.description}
                   </p>
-                  <div className="flex justify-between items-center text-sm pt-3 border-t border-base-300">
+                  <div className="flex justify-between items-center text-xs pt-2 border-t border-base-300">
                     <div className="flex items-center">
                       <User
-                        size={16}
+                        size={14}
                         className="mr-1 opacity-70 text-primary"
                       />
-                      <span>{novel.profiles?.nickname || "Anonymous"}</span>
+                      <span className="truncate max-w-[80px]">
+                        {novel.profiles?.nickname || "Anonymous"}
+                      </span>
                     </div>
                     <div className="flex items-center">
                       <Clock
-                        size={16}
+                        size={14}
                         className="mr-1 opacity-70 text-primary"
                       />
                       <span className="capitalize">{novel.status}</span>
@@ -208,13 +254,13 @@ function Browse() {
         )}
 
         {/* Show count of novels */}
-        {filteredNovels && filteredNovels.length > 0 && (
+        {sortedNovels && sortedNovels.length > 0 && (
           <div className="mt-10 text-center text-sm bg-base-200 py-3 px-4 rounded-xl inline-block mx-auto">
             Showing{" "}
             <span className="font-bold text-primary">
-              {filteredNovels.length}
+              {sortedNovels.length}
             </span>{" "}
-            {filteredNovels.length === 1 ? "novel" : "novels"}
+            {sortedNovels.length === 1 ? "novel" : "novels"}
             {searchTerm || selectedGenre || selectedStatus
               ? " matching your criteria"
               : ""}
